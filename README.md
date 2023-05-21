@@ -10,6 +10,10 @@ Predicting Infected Cells
 
 ![image](https://github.com/RaySourish/Malaria-Cell-Detection/assets/78815665/6f793aba-f080-4cdc-8bd7-d2eda14065fb)
 
+Predicting Uninfected Cells
+![image](https://github.com/RaySourish/Malaria-Cell-Detection/assets/78815665/23d00e2d-8560-47ac-b76a-c993682d85d4)
+
+
 
 
 
