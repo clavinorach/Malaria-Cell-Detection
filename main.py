@@ -21,7 +21,7 @@ def main():
                 margin-bottom: 5px;
             }
             .description {
-                color: #4A5568;
+                color: #f8f7f3;
                 text-align: center;
                 font-size: 18px;
                 margin-bottom: 40px;
@@ -84,7 +84,7 @@ def main():
     # Title and Description
     st.markdown('<h1 class="title">🦠 Malaria Cell Prediction</h1>', unsafe_allow_html=True)
     st.markdown('<p class="description">Upload a cell image to check if it\'s infected with malaria parasites.</p>', unsafe_allow_html=True)
-
+    
     # Sidebar Information
     st.sidebar.header("About")
     st.sidebar.info("""
@@ -92,7 +92,6 @@ def main():
         
         This project leverages CNN for diagnosing malaria through image analysis, contributing to global healthcare improvements.
         
-                    
         **Developed by:** Achmad Ardani Prasha & Clavino Ourizqi Rachmadi
 
         *Introduction To Artificial Intelligence - Mercu Buana University*
@@ -118,12 +117,17 @@ def main():
 
         if uploaded_file is not None:
             try:
-                # Display the image
+                # Open the uploaded image
                 image = Image.open(uploaded_file)
-                st.image(image, caption='Uploaded Image', use_column_width=True)
+
+                # Resize the image to reduce file size and dimensions
+                resized_image = resize_image(image, max_width=400, max_height=400)
+
+                # Tampilkan gambar yang sudah di-resize
+                st.image(resized_image, caption='Uploaded Image (Resized)', use_column_width=True)
 
                 # Preprocess the image for model prediction
-                processed_image = preprocess_image(image)
+                processed_image = preprocess_image(resized_image)
 
                 # Make prediction with a spinner
                 with st.spinner('🔍 Analyzing...'):
@@ -145,30 +149,54 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
+def resize_image(image, max_width=400, max_height=400):
+    """
+    Resizes the image to fit within max_width and max_height while maintaining aspect ratio.
+    """
+    original_width, original_height = image.size
+    if original_width > max_width or original_height > max_height:
+        ratio = min(max_width / original_width, max_height / original_height)
+        new_size = (int(original_width * ratio), int(original_height * ratio))
+        resized_image = image.resize(new_size, Image.ANTIALIAS)
+        return resized_image
+    return image
+
 def preprocess_image(image):
     """
     Preprocesses the image to be suitable for model prediction.
     Resize to the input shape expected by the model and normalize pixel values.
     """
-    resized_image = image.resize((64, 64))
+    # Resize the image to the model's input size (update size if needed)
+    resized_image = image.resize((64, 64))  # Update the size based on your model input
+
+    # Convert the image to array format
     img_array = np.array(resized_image)
+
+    # If the image has an alpha channel, remove it
     if img_array.shape[-1] == 4:
         img_array = img_array[..., :3]
+
+    # Normalize the pixel values to the range [0, 1]
     normalized_image = img_array / 255.0
+
+    # Expand dimensions to create a batch of size 1
     processed_image = np.expand_dims(normalized_image, axis=0)
+
     return processed_image
 
 def make_prediction(model, image):
     """
     Takes the model and preprocessed image as input, returns the predicted class.
     """
+    # Get prediction probabilities
     predictions = model.predict(image)
+    # If model outputs probabilities for binary classification, adjust accordingly
     if predictions.shape[-1] == 1:
         predicted_class = int(predictions[0][0] > 0.5)
     else:
+        # Get the class with the highest predicted probability
         predicted_class = np.argmax(predictions, axis=1)[0]
     return predicted_class
 
 if __name__ == "__main__":
     main()
-    
