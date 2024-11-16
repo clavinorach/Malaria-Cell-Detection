@@ -1,5 +1,6 @@
 Flask 
-Sklearn
+scikit-learn
 Pandas
 numpy
 matplotlib
+tensorflow
